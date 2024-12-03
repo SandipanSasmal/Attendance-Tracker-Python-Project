@@ -53,8 +53,15 @@ subject_code = input("Enter the subject code: ").strip()
 current_date = datetime.now()
 month_name = current_date.strftime("%B %Y")
 date_str = current_date.strftime("%a %d-%m-%y")
-base_path = os.path.join(os.getcwd(), month_name, subject_code)
+
+# Ensure attendance directory exists
+attendance_root = os.path.join(os.getcwd(), "attendance")
+os.makedirs(attendance_root, exist_ok=True)
+
+# Create month and subject-specific directories within attendance
+base_path = os.path.join(attendance_root, month_name, subject_code)
 os.makedirs(base_path, exist_ok=True)
+
 excel_file_path = os.path.join(base_path, "attendance.xlsx")
 
 # Check if the sheet for today's date already exists
