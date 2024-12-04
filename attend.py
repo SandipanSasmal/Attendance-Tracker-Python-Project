@@ -115,6 +115,8 @@ def enterData(z):
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         attendance_data.append([name, roll_number, 'PRESENT', timestamp])
         print(f"Marked PRESENT: {name} (University Roll Number: {roll_number}) at {timestamp}")
+    else:
+        print("Already marked present!")  # New feature added here
 
 # Function to validate scanned data
 def checkData(data):

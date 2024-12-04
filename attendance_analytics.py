@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+from datetime import datetime
 
 def load_attendance_data(attendance_dir):
     """
@@ -22,9 +23,9 @@ def load_attendance_data(attendance_dir):
                         if file.endswith(".xlsx"):
                             file_path = os.path.join(stream_path, file)
                             all_sheets_df = pd.concat(pd.read_excel(file_path, sheet_name=None), ignore_index=True)
-                            if stream_dir not in attendance_data:
-                                attendance_data[stream_dir] = []
-                            attendance_data[stream_dir].append(all_sheets_df)
+                            if (month_dir, stream_dir) not in attendance_data:
+                                attendance_data[(month_dir, stream_dir)] = []
+                            attendance_data[(month_dir, stream_dir)].append(all_sheets_df)
                             print(f"Loaded data for {month_dir} - {stream_dir}: {all_sheets_df.shape[0]} records")
     return attendance_data
 
@@ -33,19 +34,19 @@ def calculate_student_analytics(attendance_data):
     Calculate attendance analytics for each student.
 
     Args:
-        attendance_data (dict): A dictionary with keys as (stream) and values as lists of DataFrames.
+        attendance_data (dict): A dictionary with keys as (month, stream) and values as lists of DataFrames.
 
     Returns:
         dict: A dictionary with student analytics.
     """
     student_analytics = {}
-    for stream, dfs in attendance_data.items():
+    for (month, stream), dfs in attendance_data.items():
         combined_df = pd.concat(dfs, ignore_index=True)
         for _, row in combined_df.iterrows():
             student_name = row['Student Name']
             roll_number = row['University Roll Number']
             status = row['Attendance Status']
-            key = stream
+            key = (month, stream)
             if key not in student_analytics:
                 student_analytics[key] = {}
             if (student_name, roll_number) not in student_analytics[key]:
@@ -63,8 +64,9 @@ def save_analytics_to_excel(student_analytics, output_dir):
         student_analytics (dict): A dictionary with student analytics.
         output_dir (str): Path to the output directory.
     """
-    for stream, data in student_analytics.items():
-        stream_dir = os.path.join(output_dir, stream)
+    for (month, stream), data in student_analytics.items():
+        month_dir = os.path.join(output_dir, month)
+        stream_dir = os.path.join(month_dir, stream)
         os.makedirs(stream_dir, exist_ok=True)
         output_file = os.path.join(stream_dir, "analytics.xlsx")
         
@@ -86,7 +88,7 @@ def save_analytics_to_excel(student_analytics, output_dir):
         with pd.ExcelWriter(output_file, engine='openpyxl') as writer:
             df.to_excel(writer, sheet_name='Analytics', index=False)
         
-        print(f"Saved analytics for {stream} to {output_file}")
+        print(f"Saved analytics for {stream} in {month} to {output_file}")
 
 def save_cumulative_analytics(student_analytics, output_dir):
     """
@@ -98,7 +100,7 @@ def save_cumulative_analytics(student_analytics, output_dir):
     """
     os.makedirs(output_dir, exist_ok=True)
     cumulative_data = {}
-    for stream, data in student_analytics.items():
+    for (month, stream), data in student_analytics.items():
         for (student_name, roll_number), stats in data.items():
             if (student_name, roll_number) not in cumulative_data:
                 cumulative_data[(student_name, roll_number)] = {}
