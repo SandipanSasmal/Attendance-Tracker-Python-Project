@@ -1,9 +1,9 @@
-import os
 import pandas as pd
+import os
 
 def load_attendance_data(attendance_dir):
     """
-    Load attendance data from Excel files in the specified directory.
+    Load attendance data from all sheets in Excel files in the specified directory.
 
     Args:
         attendance_dir (str): Path to the attendance directory.
@@ -21,9 +21,9 @@ def load_attendance_data(attendance_dir):
                     for file in os.listdir(stream_path):
                         if file.endswith(".xlsx"):
                             file_path = os.path.join(stream_path, file)
-                            df = pd.read_excel(file_path)
-                            attendance_data[(month_dir, stream_dir)] = df
-                            print(f"Loaded data for {month_dir} - {stream_dir}: {df.shape[0]} records")
+                            all_sheets_df = pd.concat(pd.read_excel(file_path, sheet_name=None), ignore_index=True)
+                            attendance_data[(month_dir, stream_dir)] = all_sheets_df
+                            print(f"Loaded data for {month_dir} - {stream_dir}: {all_sheets_df.shape[0]} records")
     return attendance_data
 
 def calculate_student_analytics(attendance_data):

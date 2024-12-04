@@ -5,6 +5,7 @@ import base64
 from datetime import datetime
 import pandas as pd
 import os
+import subprocess  # Added to run attendance_analytics.py as a subprocess
 
 # Function to check the admin passcode
 def check_admin_passcode():
@@ -151,3 +152,11 @@ for _, row in students.iterrows():
 
 # Save attendance
 write_to_excel(attendance_data, date_str)
+
+# Automatically run attendance_analytics.py
+analytics_script = os.path.join(os.getcwd(), "attendance_analytics.py")
+if os.path.exists(analytics_script):
+    print("Running attendance_analytics.py...")
+    subprocess.run(["python", analytics_script])
+else:
+    print("Error: attendance_analytics.py not found.")
