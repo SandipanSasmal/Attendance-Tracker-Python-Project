@@ -96,14 +96,21 @@ if sheet_exists:
 
 # Function to write attendance to the Excel file
 def write_to_excel(data, date_str):
+    # Convert data to DataFrame
+    df = pd.DataFrame(data, columns=['Student Name', 'University Roll Number', 'Attendance Status', 'Time'])
+    
+    # Sort the DataFrame by 'University Roll Number'
+    df = df.sort_values(by='University Roll Number')
+    
     if os.path.exists(excel_file_path):
         with pd.ExcelWriter(excel_file_path, mode="a", engine="openpyxl") as writer:
             if date_str in writer.book.sheetnames:
                 del writer.book[date_str]  # Overwrite case
-            pd.DataFrame(data, columns=['Student Name', 'University Roll Number', 'Attendance Status', 'Time']).to_excel(writer, sheet_name=date_str, index=False)
+            df.to_excel(writer, sheet_name=date_str, index=False)
     else:
         with pd.ExcelWriter(excel_file_path, engine="openpyxl") as writer:
-            pd.DataFrame(data, columns=['Student Name', 'University Roll Number', 'Attendance Status', 'Time']).to_excel(writer, sheet_name=date_str, index=False)
+            df.to_excel(writer, sheet_name=date_str, index=False)
+    
     print(f"Attendance saved to {excel_file_path} in sheet {date_str}.")
 
 # Function to mark attendance
@@ -157,8 +164,4 @@ write_to_excel(attendance_data, date_str)
 
 # Automatically run attendance_analytics.py
 analytics_script = os.path.join(os.getcwd(), "attendance_analytics.py")
-if os.path.exists(analytics_script):
-    print("Running attendance_analytics.py...")
-    subprocess.run(["python", analytics_script])
-else:
-    print("Error: attendance_analytics.py not found.")
+subprocess.run(["python", analytics_script])
